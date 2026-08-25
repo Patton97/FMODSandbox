@@ -1,4 +1,5 @@
 #include <iostream>
+#include <conio.h>
 
 #include <chrono>
 #include <thread>
@@ -24,13 +25,48 @@ FMOD_RESULT F_CALLBACK channelGroupCallback(FMOD_CHANNELCONTROL* channelControl,
     return FMOD_OK;
 }
 
+void playAudioAsync(FMOD::System* system, const char* audioPath, FMOD::ChannelGroup* channelGroup)
+{
+    std::cout << "playing: " << audioPath << std::endl;
+
+    FMOD::Sound* sound = nullptr;
+    system->createSound(audioPath, FMOD_DEFAULT, nullptr, &sound);
+
+    // Play the sound.
+    FMOD::Channel* channel = nullptr;
+    auto result = system->playSound(sound, nullptr, false, &channel);
+    if (!succeededOrWarn("FMOD: Failed to play sound", result))
+        return;
+
+    // Assign the channel to the group.
+    result = channel->setChannelGroup(channelGroup);
+    if (!succeededOrWarn("FMOD: Failed to set channel group on", result))
+        return;
+
+    // Set a callback on the channel.
+    channel->setCallback(&channelGroupCallback);
+    if (!succeededOrWarn("FMOD: Failed to set callback for sound", result))
+        return;
+
+    bool isPlaying = false;
+    do {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+        channel->isPlaying(&isPlaying);
+
+        system->update();
+    } while (isPlaying);
+
+    // Clean up.
+    sound->release();
+}
+
 int main(int argc, char* argv[])
 {
-    FMOD_RESULT result;
-
     FMOD::System* system = nullptr;
+
     // Create the main system object.
-    result = FMOD::System_Create(&system);
+    FMOD_RESULT result = FMOD::System_Create(&system);
     if (!succeededOrWarn("FMOD: Failed to create system object", result))
         return 1;
 
@@ -46,37 +82,10 @@ int main(int argc, char* argv[])
         return 1;
 
     // Create the sound.
-    FMOD::Sound* sound = nullptr;
-    system->createSound("Assets/Alarm01.wav", FMOD_DEFAULT, nullptr, &sound);
+    std::thread playAudioAsyncTask(playAudioAsync, system, "Assets/Alarm01.wav", channelGroup);
 
-    // Play the sound.
-    FMOD::Channel* channel = nullptr;
-    result = system->playSound(sound, nullptr, false, &channel);
-    if (!succeededOrWarn("FMOD: Failed to play sound", result))
-        return 1;
+    playAudioAsyncTask.join();
 
-    // Assign the channel to the group.
-    result = channel->setChannelGroup(channelGroup);
-    if (!succeededOrWarn("FMOD: Failed to set channel group on", result))
-        return 1;
-
-    // Set a callback on the channel.
-    channel->setCallback(&channelGroupCallback);
-    if (!succeededOrWarn("FMOD: Failed to set callback for sound", result))
-        return 1;
-
-    bool isPlaying = false;
-    do {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
-        channel->isPlaying(&isPlaying);
-
-        system->update();
-    } while (isPlaying);
-
-
-    // Clean up.
-    sound->release();
     channelGroup->release();
     system->release();
 
