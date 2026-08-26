@@ -11,7 +11,7 @@
 #include "AudioManager.h"
 #include "InputManager.h"
 
-void handleInput(InputManager* inputManager, AudioManager* audioManager, bool* keepLooping)
+static void handleInput(InputManager* inputManager, AudioManager* audioManager, bool* keepLooping)
 {
     if (!_kbhit())
         return;
