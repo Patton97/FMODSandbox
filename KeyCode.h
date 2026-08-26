@@ -3,9 +3,10 @@
 enum class KeyCode
 {
     Unknown,
+    ArrowUp,
+    ArrowDown,
     Character,
-    Up,
-    Down,
     Escape,
     Spacebar,
+    Tab,
 };

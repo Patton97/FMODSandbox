@@ -11,14 +11,15 @@ KeyPress InputManager::GetKeyPress()
 
         switch (key)
         {
-            case 72: return { KeyCode::Up, 0 };
-            case 80: return { KeyCode::Down, 0 };
+            case 72: return { KeyCode::ArrowUp, 0 };
+            case 80: return { KeyCode::ArrowDown, 0 };
             default: return { KeyCode::Unknown, 0 };
         }
     }
 
     switch (key)
     {
+        case  9: return { KeyCode::Tab, 0 };
         case 27: return { KeyCode::Escape, 0 };
         case 32: return { KeyCode::Spacebar, 0 };
         default: return { KeyCode::Character, 0 };

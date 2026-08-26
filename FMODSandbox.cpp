@@ -11,6 +11,17 @@
 #include "AudioManager.h"
 #include "InputManager.h"
 
+int busControllerIndex = 0;
+const float VOLUME_INCREMENT = 0.1f;
+
+static void ModifyVolume(FMODBusController* busController, float modifyAmount)
+{
+    busController->ModifyVolume(modifyAmount);
+
+    // output new volume as both feedback & a debug measure
+    std::cout << busController->GetPath() << " | Volume = " << busController->GetVolume() << std::endl;
+}
+
 static void handleInput(InputManager* inputManager, AudioManager* audioManager, bool* keepLooping)
 {
     if (!_kbhit())
@@ -23,20 +34,30 @@ static void handleInput(InputManager* inputManager, AudioManager* audioManager, 
             std::cout << "Unknown key pressed!" << std::endl;
             break;
 
-        case KeyCode::Spacebar:
-            audioManager->PlayAudio("event:/Weapons/Explosion");
+        case KeyCode::ArrowUp:
+            ModifyVolume(audioManager->GetBusController(busControllerIndex), VOLUME_INCREMENT);
+            break;
+
+        case KeyCode::ArrowDown:
+            ModifyVolume(audioManager->GetBusController(busControllerIndex), -VOLUME_INCREMENT);
             break;
 
         case KeyCode::Escape:
             *keepLooping = false;
             break;
 
-        case KeyCode::Up:
-            audioManager->GetSFXExplosionsBusController()->IncreaseVolume(0.1f);
+        case KeyCode::Spacebar:
+            audioManager->PlayAudio("event:/Weapons/Explosion");
             break;
 
-        case KeyCode::Down:
-            audioManager->GetSFXExplosionsBusController()->DecreaseVolume(0.1f);
+        case KeyCode::Tab:
+            busControllerIndex++;
+            if (busControllerIndex >= audioManager->GetBusCount())
+            {
+                busControllerIndex = 0;
+            }
+
+            std::cout << "Selected bus: " << audioManager->GetBusController(busControllerIndex)->GetPath() << std::endl;
             break;
     }
 }

@@ -43,15 +43,8 @@ void AudioManager::LoadBanksFromFolder(std::string folderPath)
         }
     }
 
-    FMOD::Studio::Bus* masterBus;
-    FMOD_RESULT result = this->studioSystem->getBus("bus:/", &masterBus);
-    if (this->SucceededOrWarn("FMOD: Failed to find master bus!", result))
-        this->masterBusController = new FMODBusController(masterBus);
-
-    FMOD::Studio::Bus* sfxExplosionsBus;
-    result = this->studioSystem->getBus("bus:/SFX/Explosions", &sfxExplosionsBus);
-    if (this->SucceededOrWarn("FMOD: Failed to find sfx explosions bus!", result))
-        this->sfxExplosionsBusController = new FMODBusController(sfxExplosionsBus);
+    RegisterBus("bus:/", masterBusController);
+    RegisterBus("bus:/SFX/Explosions", sfxExplosionsBusController);
 }
 
 void AudioManager::PlayAudio(const char* eventPath)
@@ -87,6 +80,27 @@ FMODBusController* AudioManager::GetMasterBusController()
 FMODBusController* AudioManager::GetSFXExplosionsBusController()
 {
     return this->sfxExplosionsBusController;
+}
+
+FMODBusController* AudioManager::GetBusController(int index)
+{
+    return this->busControllers[index];
+}
+
+int AudioManager::GetBusCount()
+{
+    return this->busControllers.size();
+}
+
+void AudioManager::RegisterBus(const char* busPath, FMODBusController*& busStorage)
+{
+    FMOD::Studio::Bus* bus;
+    FMOD_RESULT result = this->studioSystem->getBus(busPath, &bus);
+    if (!this->SucceededOrWarn(std::string("FMOD: Failed to find bus at path ").append(busPath), result))
+        return;
+
+    busStorage = new FMODBusController(bus);
+    this->busControllers.push_back(busStorage);
 }
 
 bool AudioManager::SucceededOrWarn(const std::string& message, FMOD_RESULT result)
