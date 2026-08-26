@@ -77,7 +77,7 @@ void AudioController::OnKeyPress(KeyPress keyPress)
                 this->currentControlTarget = ControlTarget::Volume;
                 // output new volume as both feedback & a debug measure
                 busController = this->audioManager.GetBusController(this->currentBusIndex);
-                std::cout << busController->GetPath() << " | Volume = " << busController->GetVolume() << std::endl;
+                PrintBusVolume(busController);
                 break;
 
             default:
@@ -85,7 +85,7 @@ void AudioController::OnKeyPress(KeyPress keyPress)
                 targetForestParam = forestParamsKeyedByKey[keyPress.Character];
 
                 float currentParamValue = forestAudioController->GetParamValue(targetForestParam);
-                std::cout << "Forest audio parameter '" << targetForestParam << "': " << currentParamValue << std::endl;
+                PrintForestAudioParameterValue(targetForestParam, currentParamValue);
                 break;
             }
             break;
