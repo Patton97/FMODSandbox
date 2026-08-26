@@ -30,6 +30,14 @@ static void handleInput(InputManager* inputManager, AudioManager* audioManager, 
         case KeyCode::Escape:
             *keepLooping = false;
             break;
+
+        case KeyCode::Up:
+            audioManager->IncreaseVolume(0.1f);
+            break;
+
+        case KeyCode::Down:
+            audioManager->DecreaseVolume(0.1f);
+            break;
     }
 }
 

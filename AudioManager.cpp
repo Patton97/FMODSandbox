@@ -69,6 +69,37 @@ void AudioManager::Update()
     this->studioSystem->update();
 }
 
+void AudioManager::IncreaseVolume(float increaseAmount)
+{
+    ModifyVolume(increaseAmount);
+}
+
+void AudioManager::DecreaseVolume(float decreaseAmount)
+{
+    ModifyVolume(-decreaseAmount);
+}
+
+void AudioManager::ModifyVolume(float modifyAmount)
+{
+    FMOD::Studio::Bus* bus;
+    FMOD_RESULT result = this->studioSystem->getBus("bus:/", &bus);
+
+    float volume;
+    bus->getVolume(&volume);
+    this->SetVolume(volume + modifyAmount);
+}
+
+void AudioManager::SetVolume(float newVolume)
+{
+    FMOD::Studio::Bus* bus;
+    this->studioSystem->getBus("bus:/", &bus);
+    bus->setVolume(std::clamp(newVolume, 0.0f, 1.0f));
+    this->studioSystem->update();
+
+    float volume, finalVolume;
+    bus->getVolume(&volume, &finalVolume);
+}
+
 bool AudioManager::SucceededOrWarn(const std::string& message, FMOD_RESULT result)
 {
     if (result != FMOD_OK)

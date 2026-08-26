@@ -17,6 +17,12 @@ public:
 
     void Update();
 
+    void IncreaseVolume(float increaseAmount = 0.1f);
+    void DecreaseVolume(float decreaseAmount = 0.1f);
+    void ModifyVolume(float modifyAmount = 0.1f);
+
+    void SetVolume(float newVolume);
+
 private:
     FMOD::Studio::System* studioSystem = nullptr;
     std::map<std::string, FMOD::Studio::Bank*> banksKeyedByName;
