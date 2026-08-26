@@ -7,6 +7,7 @@
 #include <map>
 #include "FMODBusController.h"
 #include <vector>
+#include "EventInstanceController.h"
 
 class AudioManager
 {
@@ -15,7 +16,7 @@ public:
     ~AudioManager();
 
     void LoadBanksFromFolder(std::string folderPath);
-    FMOD::Studio::EventInstance* PlayAudio(const char* eventPath);
+    EventInstanceController* PlayAudio(const char* eventPath);
 
     void Update();
 

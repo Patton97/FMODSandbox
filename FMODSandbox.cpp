@@ -21,7 +21,7 @@ enum class ControlTarget
 int busControllerIndex = 0;
 const float VOLUME_INCREMENT = 0.05f;
 const float PARAM_INCREMENT = 0.05f;
-FMOD::Studio::EventInstance* forestAudio;
+EventInstanceController* forestAudioController;
 std::map<char, std::string> forestParamsKeyedByKey;
 std::string targetForestParam;
 ControlTarget currentControlTarget = ControlTarget::Volume;
@@ -32,23 +32,31 @@ static int FloatToIntPct(float f)
     return (int)(rounded * 100);
 }
 
-static void ModifyVolume(FMODBusController* busController, float modifyAmount)
+static void PrintBusVolume(FMODBusController* busController)
 {
-    busController->ModifyVolume(modifyAmount);
-
     // output new volume as both feedback & a debug measure
     std::cout << busController->GetPath() << " | Volume = " << busController->GetVolume() << std::endl;
 }
 
+static void PrintForestAudioParameterValue(std::string parameterName, float newParamValue)
+{
+    std::cout << "Forest audio parameter '" << parameterName << "': " << FloatToIntPct(newParamValue) << "%" << std::endl;
+}
+
+static void ModifyVolume(FMODBusController* busController, float modifyAmount)
+{
+    busController->ModifyVolume(modifyAmount);
+
+    // print new volume as both feedback & a debug measure
+    PrintBusVolume(busController);
+}
+
 static void ModifyParameter(float modifyAmount)
 {
-    float currentParamValue = 0.0f;
-    forestAudio->getParameterByName(targetForestParam.c_str(), &currentParamValue);
+    forestAudioController->ModifyParamValue(targetForestParam, modifyAmount);
 
-    float newParamValue = std::clamp(currentParamValue + modifyAmount, 0.0f, 1.0f);
-    forestAudio->setParameterByName(targetForestParam.c_str(), newParamValue);
-
-    std::cout << "Forest audio parameter '" << targetForestParam << "': " << FloatToIntPct(newParamValue) << "%" << std::endl;
+    // print new value as both feedback & a debug measure
+    PrintForestAudioParameterValue(targetForestParam, forestAudioController->GetParamValue(targetForestParam));
 }
 
 static void ModifyValue(AudioManager* audioManager, bool positiveModify)
@@ -65,7 +73,7 @@ static void ModifyValue(AudioManager* audioManager, bool positiveModify)
     }
 }
 
-static void handleInput(InputManager* inputManager, AudioManager* audioManager, bool* keepLooping)
+static void HandleInput(InputManager* inputManager, AudioManager* audioManager, bool* keepLooping)
 {
     if (!_kbhit())
         return;
@@ -100,8 +108,7 @@ static void handleInput(InputManager* inputManager, AudioManager* audioManager, 
                     currentControlTarget = ControlTarget::Parameter;
                     targetForestParam = forestParamsKeyedByKey[keyPress.Character];
 
-                    float currentParamValue = 0.0f;
-                    forestAudio->getParameterByName(targetForestParam.c_str(), &currentParamValue);
+                    float currentParamValue = forestAudioController->GetParamValue(targetForestParam);
                     std::cout << "Forest audio parameter '" << targetForestParam << "': " << currentParamValue << std::endl;
                     break;
             }
@@ -131,7 +138,7 @@ int main(int argc, char* argv[])
 {
     AudioManager audioManager;
     audioManager.LoadBanksFromFolder("Assets/FMODBanks/");
-    forestAudio = audioManager.PlayAudio("event:/Ambience/Forest");
+    forestAudioController = audioManager.PlayAudio("event:/Ambience/Forest");
     targetForestParam = "Cover";
 
     InputManager inputManager;
@@ -143,14 +150,14 @@ int main(int argc, char* argv[])
     bool keepLooping = true;
     while (keepLooping)
     {
-        handleInput(&inputManager, &audioManager, &keepLooping);
+        HandleInput(&inputManager, &audioManager, &keepLooping);
         audioManager.Update();
     }
 
-    if (forestAudio)
+    if (forestAudioController)
     {
-        delete forestAudio;
-        forestAudio = nullptr;
+        delete forestAudioController;
+        forestAudioController = nullptr;
     }
 
     return 0;

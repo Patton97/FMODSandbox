@@ -47,7 +47,7 @@ void AudioManager::LoadBanksFromFolder(std::string folderPath)
     RegisterBus("bus:/SFX/Explosions", sfxExplosionsBusController);
 }
 
-FMOD::Studio::EventInstance* AudioManager::PlayAudio(const char* eventPath)
+EventInstanceController* AudioManager::PlayAudio(const char* eventPath)
 {
     FMOD::Studio::EventDescription* eventDescription = nullptr;
     FMOD_RESULT result = studioSystem->getEvent(eventPath, &eventDescription);
@@ -62,7 +62,7 @@ FMOD::Studio::EventInstance* AudioManager::PlayAudio(const char* eventPath)
     eventInstance->start();
     eventInstance->release();
 
-    return eventInstance;
+    return new EventInstanceController(eventInstance);
 }
 
 void AudioManager::Update()
