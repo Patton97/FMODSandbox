@@ -52,16 +52,12 @@ void AudioManager::PlayAudio(const char* eventPath)
     FMOD::Studio::EventDescription* eventDescription = nullptr;
     FMOD_RESULT result = studioSystem->getEvent(eventPath, &eventDescription);
     if (!this->SucceededOrWarn(std::string("Failed to find event at path ").append(eventPath), result))
-    {
         return;
-    }
 
     FMOD::Studio::EventInstance* eventInstance = nullptr;
     result = eventDescription->createInstance(&eventInstance);
     if (!this->SucceededOrWarn(std::string("Failed to create instance of event at path ").append(eventPath), result))
-    {
         return;
-    }
 
     eventInstance->start();
     eventInstance->release();
