@@ -42,6 +42,16 @@ void AudioManager::LoadBanksFromFolder(std::string folderPath)
             std::cout << "Successfully loaded bank at path " << dirEntry.path() << std::endl;
         }
     }
+
+    FMOD::Studio::Bus* masterBus;
+    FMOD_RESULT result = this->studioSystem->getBus("bus:/", &masterBus);
+    if (this->SucceededOrWarn("FMOD: Failed to find master bus!", result))
+        this->masterBusController = new FMODBusController(masterBus);
+
+    FMOD::Studio::Bus* sfxExplosionsBus;
+    result = this->studioSystem->getBus("bus:/SFX/Explosions", &sfxExplosionsBus);
+    if (this->SucceededOrWarn("FMOD: Failed to find sfx explosions bus!", result))
+        this->sfxExplosionsBusController = new FMODBusController(sfxExplosionsBus);
 }
 
 void AudioManager::PlayAudio(const char* eventPath)
@@ -69,35 +79,14 @@ void AudioManager::Update()
     this->studioSystem->update();
 }
 
-void AudioManager::IncreaseVolume(float increaseAmount)
+FMODBusController* AudioManager::GetMasterBusController()
 {
-    ModifyVolume(increaseAmount);
+    return this->masterBusController;
 }
 
-void AudioManager::DecreaseVolume(float decreaseAmount)
+FMODBusController* AudioManager::GetSFXExplosionsBusController()
 {
-    ModifyVolume(-decreaseAmount);
-}
-
-void AudioManager::ModifyVolume(float modifyAmount)
-{
-    FMOD::Studio::Bus* bus;
-    FMOD_RESULT result = this->studioSystem->getBus("bus:/", &bus);
-
-    float volume;
-    bus->getVolume(&volume);
-    this->SetVolume(volume + modifyAmount);
-}
-
-void AudioManager::SetVolume(float newVolume)
-{
-    FMOD::Studio::Bus* bus;
-    this->studioSystem->getBus("bus:/", &bus);
-    bus->setVolume(std::clamp(newVolume, 0.0f, 1.0f));
-    this->studioSystem->update();
-
-    float volume, finalVolume;
-    bus->getVolume(&volume, &finalVolume);
+    return this->sfxExplosionsBusController;
 }
 
 bool AudioManager::SucceededOrWarn(const std::string& message, FMOD_RESULT result)
