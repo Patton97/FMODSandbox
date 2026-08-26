@@ -15,7 +15,7 @@ public:
     ~AudioManager();
 
     void LoadBanksFromFolder(std::string folderPath);
-    void PlayAudio(const char* eventPath);
+    FMOD::Studio::EventInstance* PlayAudio(const char* eventPath);
 
     void Update();
 

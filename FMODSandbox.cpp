@@ -13,6 +13,7 @@
 
 int busControllerIndex = 0;
 const float VOLUME_INCREMENT = 0.1f;
+FMOD::Studio::EventInstance* forestAudio;
 
 static void ModifyVolume(FMODBusController* busController, float modifyAmount)
 {
@@ -42,6 +43,24 @@ static void handleInput(InputManager* inputManager, AudioManager* audioManager, 
             ModifyVolume(audioManager->GetBusController(busControllerIndex), -VOLUME_INCREMENT);
             break;
 
+        case KeyCode::Character:
+            FMOD_RESULT result;
+            switch (keyPress.Character)
+            {
+                case 'c':
+                    result = forestAudio->setParameterByName("Cover", 0.5f);
+                    break;
+
+                case 'r':
+                    result = forestAudio->setParameterByName("Rain", 0.5f);
+                    break;
+
+                case 'w':
+                    result = forestAudio->setParameterByName("Wind", 0.5f);
+                    break;
+            }
+            break;
+
         case KeyCode::Escape:
             *keepLooping = false;
             break;
@@ -66,7 +85,7 @@ int main(int argc, char* argv[])
 {
     AudioManager audioManager;
     audioManager.LoadBanksFromFolder("Assets/FMODBanks/");
-    audioManager.PlayAudio("event:/Ambience/Forest");
+    forestAudio = audioManager.PlayAudio("event:/Ambience/Forest");
 
     InputManager inputManager;
 
@@ -75,6 +94,12 @@ int main(int argc, char* argv[])
     {
         handleInput(&inputManager, &audioManager, &keepLooping);
         audioManager.Update();
+    }
+
+    if (forestAudio)
+    {
+        delete forestAudio;
+        forestAudio = nullptr;
     }
 
     return 0;

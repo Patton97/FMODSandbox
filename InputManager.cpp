@@ -22,6 +22,6 @@ KeyPress InputManager::GetKeyPress()
         case  9: return { KeyCode::Tab, 0 };
         case 27: return { KeyCode::Escape, 0 };
         case 32: return { KeyCode::Spacebar, 0 };
-        default: return { KeyCode::Character, 0 };
+        default: return { KeyCode::Character, (char)key };
     }
 }
