@@ -24,15 +24,4 @@ namespace Utils
         else
             return newIndex;
     }
-
-    static void PrintProgressBar(std::stringstream* stream, float progressValue, float incrementSize)
-    {
-        *stream << " [";
-        for (int i = 0; i < 1 / incrementSize; ++i)
-        {
-            char charToPrint = i < progressValue / incrementSize ? (char)254u : ' ';
-            *stream << charToPrint;
-        }
-        *stream << ']';
-    }
 }

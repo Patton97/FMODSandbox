@@ -7,8 +7,6 @@
 #include "FMODBusController.h"
 #include "Utils.h"
 
-const float MODIFY_VALUE_INCREMENT = 0.05f;
-
 AudioController::AudioController(InputManager& inputManager, AudioManager& audioManager, bool* keepLooping)
     : inputManager(inputManager), audioManager(audioManager)
 {
@@ -25,81 +23,16 @@ void AudioController::Update()
     this->OnKeyPress(keyPress);
 }
 
-void AudioController::SubscribeToASCIIUIStringUpdates(OnASCIIUIStringUpdatedEventHandler eventHandler)
+void AudioController::SubscribeToSettingsChanged(OnSettingsChangedEventHandler eventHandler)
 {
-    this->onASCIIUIStringUpdatedEventHandlers.push_back(eventHandler);
-}
-
-std::string AudioController::GetASCIIUIString()
-{
-    std::stringstream ss;
-
-    std::string selectedIndicator = ">> ";
-    std::string unselectedIndicator = "   ";
-
-    for (int i = 0; i < this->audioManager.GetBusCount(); ++i)
-    {
-        FMODBusController* busController = this->audioManager.GetBusController(i);
-        bool isSelected = this->currentControlTarget == ControlTarget::Volume && this->currentBusIndex == i;
-        ss << (isSelected ? selectedIndicator : unselectedIndicator);
-
-        std::string busPath = busController->GetPath();
-        ss << busPath;
-
-        // this should really be determined from bus list, but for now this works
-        constexpr int MAX_BUS_PATH_LENGTH = 19;
-        if (busPath.size() < MAX_BUS_PATH_LENGTH)
-            ss << std::string(MAX_BUS_PATH_LENGTH - busPath.size(), ' ');
-
-        std::string pctString = std::to_string(Utils::FloatToIntPct(busController->GetVolume()));
-        ss << " | Volume: " << pctString << "%";
-
-        constexpr int MAX_PCT_STR_LENGTH = 3;
-        if (pctString.size() < MAX_PCT_STR_LENGTH)
-            ss << std::string(MAX_PCT_STR_LENGTH - pctString.size(), ' ');
-
-        Utils::PrintProgressBar(&ss, busController->GetVolume(), MODIFY_VALUE_INCREMENT);
-        ss << std::endl;
-    }
-
-    ss << std::string(65, '=') << std::endl;
-
-    EventInstanceController* audioController = this->forestAudioController;
-    for (int i = 0; i < audioController->GetParamCount(); ++i)
-    {
-        bool isSelected = this->currentControlTarget == ControlTarget::Parameter && this->currentParameterIndex == i;
-        std::string audioName = audioController->GetName();
-        std::string paramName = audioController->GetParamName(i);
-        float paramValue = audioController->GetParamValue(paramName);
-        std::string pctString = std::to_string(Utils::FloatToIntPct(paramValue));
-
-        ss << (isSelected ? selectedIndicator : unselectedIndicator);
-        ss << audioName << " | " << paramName;
-
-        // this should really be determined from param list, but for now this works
-        constexpr int MAX_PARAM_NAME_LENGTH = 5;
-        if (pctString.size() < MAX_PARAM_NAME_LENGTH)
-            ss << std::string(MAX_PARAM_NAME_LENGTH - paramName.size(), ' ');
-
-        ss << ": " << pctString << "%";;
-
-        constexpr int MAX_PCT_STR_LENGTH = 3;
-        if (pctString.size() < MAX_PCT_STR_LENGTH)
-            ss << std::string(MAX_PCT_STR_LENGTH - pctString.size(), ' ');
-
-        Utils::PrintProgressBar(&ss, paramValue, MODIFY_VALUE_INCREMENT);
-        ss << std::endl;
-    }
-
-    return ss.str();
+    this->onSettingsChangedEventHandler.push_back(eventHandler);
 }
 
 void AudioController::RaiseOnASCIIUIStringUpdated()
 {
-    std::string asciiUIString = this->GetASCIIUIString();
-    for (int i = 0; i < this->onASCIIUIStringUpdatedEventHandlers.size(); ++i)
+    for (int i = 0; i < this->onSettingsChangedEventHandler.size(); ++i)
     {
-        this->onASCIIUIStringUpdatedEventHandlers[i](asciiUIString);
+        this->onSettingsChangedEventHandler[i]();
     }
 }
 
@@ -199,14 +132,15 @@ void AudioController::ModifyVolume(FMODBusController* busController, float modif
 
 void AudioController::ModifyValue(bool positiveModify)
 {
+    float modifyAmount = positiveModify ? this->GetValueModificationIncrement() : -this->GetValueModificationIncrement();
     switch (this->currentControlTarget)
     {
         case ControlTarget::Parameter:
-            ModifyParameter(positiveModify ? MODIFY_VALUE_INCREMENT : -MODIFY_VALUE_INCREMENT);
+            ModifyParameter(modifyAmount);
             break;
 
         case ControlTarget::Volume:
-            ModifyVolume(this->audioManager.GetBusController(this->currentBusIndex), positiveModify ? MODIFY_VALUE_INCREMENT : -MODIFY_VALUE_INCREMENT);
+            ModifyVolume(this->audioManager.GetBusController(this->currentBusIndex), modifyAmount);
             break;
     }
 }

@@ -2,15 +2,15 @@
 
 #include "AudioController.h"
 #include "AudioManager.h"
-#include "ConsoleASCIIUIPrinter.h"
+#include "AudioUIConsolePrinter.h"
 #include "InputManager.h"
 
 bool keepLooping = true;
-ConsoleASCIIUIPrinter* uiPrinter;
+AudioUIConsolePrinter* uiPrinter;
 
-static void SetPrinterString(std::string string)
+static void RefreshUI()
 {
-    uiPrinter->SetString(string);
+    uiPrinter->RefreshUI();
 }
 
 int main(int argc, char* argv[])
@@ -21,9 +21,9 @@ int main(int argc, char* argv[])
     InputManager inputManager;
 
     AudioController audioController(inputManager, audioManager, &keepLooping);
-    uiPrinter = new ConsoleASCIIUIPrinter();
+    uiPrinter = new AudioUIConsolePrinter(audioController, audioManager);
 
-    audioController.SubscribeToASCIIUIStringUpdates(&SetPrinterString);
+    audioController.SubscribeToSettingsChanged(&RefreshUI);
 
     while (keepLooping)
     {
