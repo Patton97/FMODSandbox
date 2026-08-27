@@ -22,7 +22,10 @@ AudioManager::AudioManager()
 AudioManager::~AudioManager()
 {
     this->studioSystem->release();
-    delete this->studioSystem;
+    this->studioSystem = nullptr;
+
+    this->studioSystem->unloadAll();
+    this->studioSystem->release();
     this->studioSystem = nullptr;
 }
 
