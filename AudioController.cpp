@@ -4,7 +4,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "FMODBusController.h"
+#include "BusController.h"
 #include "Utils.h"
 
 AudioController::AudioController(InputManager& inputManager, AudioManager& audioManager, bool* keepLooping)
@@ -72,7 +72,7 @@ void AudioController::OnKeyPress(KeyPress keyPress)
 
 void AudioController::ChangeControlTarget()
 {
-    FMODBusController* busController;
+    BusController* busController;
     switch (this->currentControlTarget)
     {
         case ControlTarget::Parameter:
@@ -123,7 +123,7 @@ void AudioController::ChangeParameterIndex(bool increment)
     RaiseOnASCIIUIStringUpdated();
 }
 
-void AudioController::ModifyVolume(FMODBusController* busController, float modifyAmount)
+void AudioController::ModifyVolume(BusController* busController, float modifyAmount)
 {
     busController->ModifyVolume(modifyAmount);
 

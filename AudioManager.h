@@ -5,8 +5,9 @@
 #include <fmod_studio.hpp>
 #include <string>
 #include <map>
-#include "FMODBusController.h"
 #include <vector>
+
+#include "BusController.h"
 #include "EventInstanceController.h"
 
 class AudioManager
@@ -20,20 +21,20 @@ public:
 
     void Update();
 
-    FMODBusController* GetMasterBusController();
-    FMODBusController* GetSFXExplosionsBusController();
+    BusController* GetMasterBusController();
+    BusController* GetSFXExplosionsBusController();
 
-    FMODBusController* GetBusController(int index);
+    BusController* GetBusController(int index);
     int GetBusCount();
 
 private:
     FMOD::Studio::System* studioSystem = nullptr;
     std::map<std::string, FMOD::Studio::Bank*> banksKeyedByName;
 
-    std::vector<FMODBusController*> busControllers;
-    FMODBusController* masterBusController;
-    FMODBusController* sfxExplosionsBusController;
+    std::vector<BusController*> busControllers;
+    BusController* masterBusController;
+    BusController* sfxExplosionsBusController;
 
-    void RegisterBus(const char* busPath, FMODBusController*& busStorage);
+    void RegisterBus(const char* busPath, BusController*& busStorage);
     bool SucceededOrWarn(const std::string& message, FMOD_RESULT result);
 };

@@ -3,10 +3,10 @@
 #include <fmod_studio.hpp>
 #include <string>
 
-class FMODBusController
+class BusController
 {
 public:
-    FMODBusController(FMOD::Studio::Bus* bus);
+    BusController(FMOD::Studio::Bus* bus);
 
     std::string GetPath() const;
 

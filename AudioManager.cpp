@@ -73,17 +73,17 @@ void AudioManager::Update()
     this->studioSystem->update();
 }
 
-FMODBusController* AudioManager::GetMasterBusController()
+BusController* AudioManager::GetMasterBusController()
 {
     return this->masterBusController;
 }
 
-FMODBusController* AudioManager::GetSFXExplosionsBusController()
+BusController* AudioManager::GetSFXExplosionsBusController()
 {
     return this->sfxExplosionsBusController;
 }
 
-FMODBusController* AudioManager::GetBusController(int index)
+BusController* AudioManager::GetBusController(int index)
 {
     return this->busControllers[index];
 }
@@ -93,14 +93,14 @@ int AudioManager::GetBusCount()
     return this->busControllers.size();
 }
 
-void AudioManager::RegisterBus(const char* busPath, FMODBusController*& busStorage)
+void AudioManager::RegisterBus(const char* busPath, BusController*& busStorage)
 {
     FMOD::Studio::Bus* bus;
     FMOD_RESULT result = this->studioSystem->getBus(busPath, &bus);
     if (!this->SucceededOrWarn(std::string("FMOD: Failed to find bus at path ").append(busPath), result))
         return;
 
-    busStorage = new FMODBusController(bus);
+    busStorage = new BusController(bus);
     this->busControllers.push_back(busStorage);
 }
 

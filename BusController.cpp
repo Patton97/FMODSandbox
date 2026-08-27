@@ -1,12 +1,12 @@
-#include "FMODBusController.h"
+#include "BusController.h"
 #include <algorithm>
 
-FMODBusController::FMODBusController(FMOD::Studio::Bus* bus)
+BusController::BusController(FMOD::Studio::Bus* bus)
 {
     this->bus = bus;
 }
 
-std::string FMODBusController::GetPath() const
+std::string BusController::GetPath() const
 {
     char path[512];
     int* retrieved = nullptr;
@@ -15,30 +15,30 @@ std::string FMODBusController::GetPath() const
     return std::string(path);
 }
 
-float FMODBusController::GetVolume()
+float BusController::GetVolume()
 {
     float volume;
     this->bus->getVolume(&volume);
     return volume;
 }
 
-void FMODBusController::SetVolume(float newVolume)
+void BusController::SetVolume(float newVolume)
 {
     newVolume = std::clamp(newVolume, 0.0f, 1.0f);
     this->bus->setVolume(newVolume);
 }
 
-void FMODBusController::IncreaseVolume(float increaseAmount)
+void BusController::IncreaseVolume(float increaseAmount)
 {
     ModifyVolume(increaseAmount);
 }
 
-void FMODBusController::DecreaseVolume(float decreaseAmount)
+void BusController::DecreaseVolume(float decreaseAmount)
 {
     ModifyVolume(-decreaseAmount);
 }
 
-void FMODBusController::ModifyVolume(float modifyAmount)
+void BusController::ModifyVolume(float modifyAmount)
 {
     this->SetVolume(this->GetVolume() + modifyAmount);
 }

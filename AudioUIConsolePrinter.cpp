@@ -64,7 +64,7 @@ std::string AudioUIConsolePrinter::GetASCIIUIString() const
 
     for (int i = 0; i < this->audioController.GetBusCount(); ++i)
     {
-        FMODBusController* busController = this->audioManager.GetBusController(i);
+        BusController* busController = this->audioManager.GetBusController(i);
         bool isSelected = currentControlTarget == ControlTarget::Volume && this->audioController.GetCurrentBusIndex() == i;
         ss << (isSelected ? selectedIndicator : unselectedIndicator);
 

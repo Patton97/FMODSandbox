@@ -1,8 +1,9 @@
 #pragma once
 
-#include "KeyPress.h"
-#include "InputManager.h"
 #include "AudioManager.h"
+#include "BusController.h"
+#include "InputManager.h"
+#include "KeyPress.h"
 
 enum class ControlTarget
 {
@@ -52,8 +53,8 @@ private:
     void ChangeControlTargetItemIndex(bool increment);
     void ChangeBusIndex(bool increment);
     void ChangeParameterIndex(bool increment);
-    
-    void ModifyVolume(FMODBusController* busController, float modifyAmount);
+
+    void ModifyVolume(BusController* busController, float modifyAmount);
     void ModifyValue(bool positiveModify);
     void ModifyParameter(float modifyAmount);
 
