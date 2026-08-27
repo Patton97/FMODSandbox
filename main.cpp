@@ -23,6 +23,7 @@ int main(int argc, char* argv[])
     AudioController audioController(inputManager, audioManager, &keepLooping);
     uiPrinter = new AudioUIConsolePrinter(audioController, audioManager);
 
+    RefreshUI();
     audioController.SubscribeToSettingsChanged(&RefreshUI);
 
     while (keepLooping)

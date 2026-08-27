@@ -8,12 +8,16 @@ class AudioUIConsolePrinter
 public:
     AudioUIConsolePrinter(AudioController& audioController, AudioManager& audioManager);
 
-    void RefreshUI();
+    void RefreshUI() const;
 
 private:
     AudioController& audioController;
     AudioManager& audioManager;
 
+    std::string selectedIndicator = ">> ";
+    std::string unselectedIndicator = "   ";
+
     std::string GetASCIIUIString() const;
+    void PrintSelectedIndicator(std::stringstream* stream, bool isSelected) const;
 };
 
