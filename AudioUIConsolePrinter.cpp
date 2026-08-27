@@ -39,18 +39,8 @@ AudioUIConsolePrinter::AudioUIConsolePrinter(
 
 void AudioUIConsolePrinter::RefreshUI()
 {
-    this->uiString = this->GetASCIIUIString();
-    this->hasUIStringChangedSinceLastUpdate = true;
-}
-
-void AudioUIConsolePrinter::Update()
-{
-    if (!this->hasUIStringChangedSinceLastUpdate)
-        return;
-
-    this->hasUIStringChangedSinceLastUpdate = false;
     system("cls");
-    std::cout << this->uiString << std::endl;
+    std::cout << this->GetASCIIUIString() << std::endl;
 }
 
 std::string AudioUIConsolePrinter::GetASCIIUIString() const

@@ -29,7 +29,6 @@ int main(int argc, char* argv[])
     {
         audioController.Update();
         audioManager.Update();
-        uiPrinter->Update();
     }
 
     if (uiPrinter)
