@@ -1,6 +1,8 @@
 #pragma once
 
+#include <chrono>
 #include <string>
+
 #include "AudioController.h"
 
 class AudioUIConsolePrinter
@@ -18,6 +20,13 @@ private:
     std::string unselectedIndicator = "   ";
 
     std::string GetASCIIUIString() const;
-    void PrintSelectedIndicator(std::stringstream* stream, bool isSelected) const;
+    std::string GetSelectedIndicator(std::stringstream* stream, bool isSelected) const;
+    void BuildBusInfoString(std::stringstream* stream) const;
+    void BuildParameterInfoString(std::stringstream* stream) const;
+    void BuildUIPerformanceMetricsString(
+        std::stringstream* stream,
+        std::chrono::steady_clock::time_point& uiStringBuildStartTime,
+        std::chrono::steady_clock::time_point& uiStringBuildEndTime
+    ) const;
 };
 

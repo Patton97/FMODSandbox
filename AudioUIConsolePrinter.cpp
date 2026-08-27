@@ -1,6 +1,5 @@
 #include "AudioUIConsolePrinter.h"
 
-#include <chrono>
 #include <iostream>
 #include <sstream>
 #include <stdlib.h>
@@ -53,74 +52,95 @@ AudioUIConsolePrinter::AudioUIConsolePrinter(
 
 void AudioUIConsolePrinter::RefreshUI() const
 {
+    std::string uiString = this->GetASCIIUIString();
     system("cls");
-    std::cout << this->GetASCIIUIString() << std::endl;
+    std::cout << uiString << std::endl;
 }
 
 std::string AudioUIConsolePrinter::GetASCIIUIString() const
 {
+    std::stringstream stream;
+
     auto uiStringBuildStartTime = Clock::now();
+    this->BuildBusInfoString(&stream);
 
-    std::stringstream ss;
+    stream << std::string(65, '=') << std::endl;
 
+    this->BuildParameterInfoString(&stream);
+
+    auto uiStringBuildEndTime = Clock::now();
+    this->BuildUIPerformanceMetricsString(&stream, uiStringBuildStartTime, uiStringBuildEndTime);
+
+    return stream.str();
+}
+
+std::string AudioUIConsolePrinter::GetSelectedIndicator(std::stringstream* stream, bool isSelected) const
+{
+    return isSelected ? this->selectedIndicator : this->unselectedIndicator;
+}
+
+void AudioUIConsolePrinter::BuildBusInfoString(std::stringstream* stream) const
+{
     ControlTarget currentControlTarget = this->audioController.GetCurrentControlTarget();
 
     for (int i = 0; i < this->audioController.GetBusCount(); ++i)
     {
         BusController* busController = this->audioManager.GetBusController(i);
         bool isSelected = currentControlTarget == ControlTarget::Volume && this->audioController.GetCurrentBusIndex() == i;
-        ss << (isSelected ? this->selectedIndicator : this->unselectedIndicator);
+        *stream << (isSelected ? this->selectedIndicator : this->unselectedIndicator);
 
         std::string busPath = busController->GetPath();
-        ss << busPath;
+        *stream << busPath;
 
         // this should really be determined from bus list, but for now this works
         constexpr int MAX_BUS_PATH_LENGTH = 19;
         if (busPath.size() < MAX_BUS_PATH_LENGTH)
-            ss << std::string(MAX_BUS_PATH_LENGTH - busPath.size(), ' ');
+            *stream << std::string(MAX_BUS_PATH_LENGTH - busPath.size(), ' ');
 
-        ss << " | Volume: ";
+        *stream << " | Volume: ";
 
-        PrintPercentage(&ss, Utils::FloatToIntPct(busController->GetVolume()));
-        PrintProgressBar(&ss, busController->GetVolume(), this->audioController.GetValueModificationIncrement());
+        PrintPercentage(stream, Utils::FloatToIntPct(busController->GetVolume()));
+        PrintProgressBar(stream, busController->GetVolume(), this->audioController.GetValueModificationIncrement());
 
-        ss << std::endl;
+        *stream << std::endl;
     }
+}
 
-    ss << std::string(65, '=') << std::endl;
+void AudioUIConsolePrinter::BuildParameterInfoString(std::stringstream* stream) const
+{
+    ControlTarget currentControlTarget = this->audioController.GetCurrentControlTarget();
 
     EventInstanceController* eventInstanceController = this->audioController.GetForestAudioController();
     for (int i = 0; i < eventInstanceController->GetParamCount(); ++i)
     {
         bool isSelected = currentControlTarget == ControlTarget::Parameter && this->audioController.GetCurrentParamIndex() == i;
+
         std::string audioName = eventInstanceController->GetName();
         std::string paramName = eventInstanceController->GetParamName(i);
         float paramValue = eventInstanceController->GetParamValue(paramName);
 
-        ss << (isSelected ? selectedIndicator : unselectedIndicator);
-        ss << audioName << " | " << paramName;
+        *stream << (isSelected ? selectedIndicator : unselectedIndicator);
+        *stream << audioName << " | " << paramName;
 
         // this should really be determined from param list, but for now this works
         constexpr int MAX_PARAM_NAME_LENGTH = 5;
         if (paramName.size() < MAX_PARAM_NAME_LENGTH)
-            ss << std::string(MAX_PARAM_NAME_LENGTH - paramName.size(), ' ');
+            *stream << std::string(MAX_PARAM_NAME_LENGTH - paramName.size(), ' ');
 
-        ss << ": ";
+        *stream << ": ";
 
-        PrintPercentage(&ss, Utils::FloatToIntPct(paramValue));
-        PrintProgressBar(&ss, paramValue, this->audioController.GetValueModificationIncrement());
-        ss << std::endl;
+        PrintPercentage(stream, Utils::FloatToIntPct(paramValue));
+        PrintProgressBar(stream, paramValue, this->audioController.GetValueModificationIncrement());
+        *stream << std::endl;
     }
-
-    auto uiStringBuildEndTime = Clock::now();
-    auto uiStringBuildTimeElapsed = uiStringBuildEndTime - uiStringBuildStartTime;
-    float uiStringBuildTimeElapsedMs = uiStringBuildTimeElapsed.count() / 1000000.0f;
-    ss << std::endl << "UI build time: " << uiStringBuildTimeElapsedMs << "ms" << std::endl;
-
-    return ss.str();
 }
 
-void AudioUIConsolePrinter::PrintSelectedIndicator(std::stringstream* stream, bool isSelected) const
+void AudioUIConsolePrinter::BuildUIPerformanceMetricsString(
+    std::stringstream* stream,
+    std::chrono::steady_clock::time_point& uiStringBuildStartTime,
+    std::chrono::steady_clock::time_point& uiStringBuildEndTime) const
 {
-    *stream << (isSelected ? this->selectedIndicator : this->unselectedIndicator);
+    auto uiStringBuildTimeElapsed = uiStringBuildEndTime - uiStringBuildStartTime;
+    float uiStringBuildTimeElapsedMs = uiStringBuildTimeElapsed.count() / 1000000.0f;
+    *stream << std::endl << "UI build time: " << uiStringBuildTimeElapsedMs << "ms" << std::endl;
 }
