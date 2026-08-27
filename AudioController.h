@@ -9,12 +9,15 @@ enum class ControlTarget
     Volume,
 };
 
+typedef void (OnASCIIUIStringUpdatedEventHandler)(std::string);
+
 class AudioController
 {
 public:
     AudioController(InputManager& inputManager, AudioManager& audioManager, bool* keepLooping);
 
     void Update();
+    void SubscribeToASCIIUIStringUpdates(OnASCIIUIStringUpdatedEventHandler eventHandler);
 
 private:
     InputManager& inputManager;
@@ -27,6 +30,8 @@ private:
 
     EventInstanceController* forestAudioController;
 
+    std::vector<OnASCIIUIStringUpdatedEventHandler*> onASCIIUIStringUpdatedEventHandlers;
+
     void OnKeyPress(KeyPress keyPress);
 
     void ChangeControlTarget();
@@ -37,5 +42,8 @@ private:
     void ModifyVolume(FMODBusController* busController, float modifyAmount);
     void ModifyValue(bool positiveModify);
     void ModifyParameter(float modifyAmount);
+
+    std::string GetASCIIUIString();
+    void RaiseOnASCIIUIStringUpdated();
 };
 

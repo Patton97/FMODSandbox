@@ -13,18 +13,6 @@ namespace Utils
         return (int)(rounded * 100);
     }
 
-    static void PrintBusVolume(FMODBusController* busController)
-    {
-        // output new volume as both feedback & a debug measure
-        std::cout << busController->GetPath() << " | Volume = " << busController->GetVolume() << std::endl;
-    }
-
-    static void PrintParameter(EventInstanceController* eventInstanceController, std::string parameterName)
-    {
-        float paramValue = eventInstanceController->GetParamValue(parameterName);
-        std::cout << eventInstanceController->GetName() << " | " << parameterName << " = " << FloatToIntPct(paramValue) << "%" << std::endl;
-    }
-
     static int ModifyInt(int currentValue, int minValue, int maxValue, bool increment, bool wrap)
     {
         int newIndex = increment ? currentValue + 1 : currentValue - 1;
@@ -35,5 +23,16 @@ namespace Utils
             return wrap ? maxValue : minValue;
         else
             return newIndex;
+    }
+
+    static void PrintProgressBar(std::stringstream* stream, float progressValue, float incrementSize)
+    {
+        *stream << " [";
+        for (int i = 0; i < 1 / incrementSize; ++i)
+        {
+            char charToPrint = i < progressValue / incrementSize ? (char)254u : ' ';
+            *stream << charToPrint;
+        }
+        *stream << ']';
     }
 }
