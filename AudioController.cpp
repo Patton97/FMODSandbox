@@ -4,44 +4,16 @@
 #include <iostream>
 
 #include "FMODBusController.h"
+#include "Utils.h"
 
 const float VOLUME_INCREMENT = 0.05f;
 const float PARAM_INCREMENT = 0.05f;
-
-static int FloatToIntPct(float f)
-{
-    float rounded = std::round(f * 100.0) / 100.0;
-    return (int)(rounded * 100);
-}
-
-static void PrintBusVolume(FMODBusController* busController)
-{
-    // output new volume as both feedback & a debug measure
-    std::cout << busController->GetPath() << " | Volume = " << busController->GetVolume() << std::endl;
-}
-
-static void PrintForestAudioParameterValue(std::string parameterName, float newParamValue)
-{
-    std::cout << "Forest audio parameter '" << parameterName << "': " << FloatToIntPct(newParamValue) << "%" << std::endl;
-}
-
-static void ModifyVolume(FMODBusController* busController, float modifyAmount)
-{
-    busController->ModifyVolume(modifyAmount);
-
-    // print new volume as both feedback & a debug measure
-    PrintBusVolume(busController);
-}
 
 AudioController::AudioController(InputManager& inputManager, AudioManager& audioManager, bool* keepLooping)
     : inputManager(inputManager), audioManager(audioManager)
 {
     this->keepLooping = keepLooping;
     forestAudioController = audioManager.PlayAudio("event:/Ambience/Forest");
-
-    forestParamsKeyedByKey['c'] = "Cover";
-    forestParamsKeyedByKey['r'] = "Rain";
-    forestParamsKeyedByKey['w'] = "Wind";
 }
 
 void AudioController::Update()
@@ -69,25 +41,12 @@ void AudioController::OnKeyPress(KeyPress keyPress)
             ModifyValue(/*positiveModify*/ false);
             break;
 
-        case KeyCode::Character:
-            FMODBusController* busController;
-            switch (keyPress.Character)
-            {
-            case 'v':
-                this->currentControlTarget = ControlTarget::Volume;
-                // output new volume as both feedback & a debug measure
-                busController = this->audioManager.GetBusController(this->currentBusIndex);
-                PrintBusVolume(busController);
-                break;
+        case KeyCode::ArrowLeft:
+            ChangeControlTargetItemIndex(/*increment*/ false);
+            break;
 
-            default:
-                this->currentControlTarget = ControlTarget::Parameter;
-                targetForestParam = forestParamsKeyedByKey[keyPress.Character];
-
-                float currentParamValue = forestAudioController->GetParamValue(targetForestParam);
-                PrintForestAudioParameterValue(targetForestParam, currentParamValue);
-                break;
-            }
+        case KeyCode::ArrowRight:
+            ChangeControlTargetItemIndex(/*increment*/ true);
             break;
 
         case KeyCode::Escape:
@@ -99,15 +58,71 @@ void AudioController::OnKeyPress(KeyPress keyPress)
             break;
 
         case KeyCode::Tab:
-            this->currentBusIndex++;
-            if (this->currentBusIndex >= this->audioManager.GetBusCount())
-            {
-                this->currentBusIndex = 0;
-            }
-
-            std::cout << "Selected bus: " << this->audioManager.GetBusController(this->currentBusIndex)->GetPath() << std::endl;
+            ChangeControlTarget();
             break;
     }
+}
+
+void AudioController::ChangeControlTarget()
+{
+    FMODBusController* busController;
+    switch (this->currentControlTarget)
+    {
+        case ControlTarget::Parameter:
+            this->currentControlTarget = ControlTarget::Volume;
+            // output volume as both feedback & a debug measure
+            busController = this->audioManager.GetBusController(this->currentBusIndex);
+            Utils::PrintBusVolume(busController);
+            break;
+
+        case ControlTarget::Volume:
+            this->currentControlTarget = ControlTarget::Parameter;
+            // output value as both feedback & a debug measure
+            std::string paramName = forestAudioController->GetParamName(this->currentParameterIndex);
+            Utils::PrintParameter(forestAudioController, paramName);
+            break;
+    }
+}
+
+void AudioController::ChangeControlTargetItemIndex(bool increment)
+{
+    switch (this->currentControlTarget)
+    {
+        case ControlTarget::Parameter:
+            ChangeParameterIndex(increment);
+            break;
+
+        case ControlTarget::Volume:
+            ChangeBusIndex(increment);
+            break;
+    }
+}
+
+void AudioController::ChangeBusIndex(bool increment)
+{
+    int minIndex = 0;
+    int maxIndex = this->audioManager.GetBusCount() - 1;
+    int newIndex = this->currentBusIndex = Utils::ModifyInt(this->currentBusIndex, minIndex, maxIndex, increment, /*wrap*/ true);
+
+    Utils::PrintBusVolume(this->audioManager.GetBusController(newIndex));
+}
+
+void AudioController::ChangeParameterIndex(bool increment)
+{
+    int minIndex = 0;
+    int maxIndex = this->forestAudioController->GetParamCount() - 1;
+    int newIndex = this->currentParameterIndex = Utils::ModifyInt(this->currentParameterIndex, minIndex, maxIndex, increment, /*wrap*/ true);
+
+    std::string paramName = this->forestAudioController->GetParamName(newIndex);
+    Utils::PrintParameter(this->forestAudioController, paramName);
+}
+
+void AudioController::ModifyVolume(FMODBusController* busController, float modifyAmount)
+{
+    busController->ModifyVolume(modifyAmount);
+
+    // print new volume as both feedback & a debug measure
+    Utils::PrintBusVolume(busController);
 }
 
 void AudioController::ModifyValue(bool positiveModify)
@@ -126,9 +141,9 @@ void AudioController::ModifyValue(bool positiveModify)
 
 void AudioController::ModifyParameter(float modifyAmount)
 {
-    forestAudioController->ModifyParamValue(targetForestParam, modifyAmount);
+    std::string paramName = this->forestAudioController->GetParamName(this->currentParameterIndex);
+    forestAudioController->ModifyParamValue(paramName, modifyAmount);
 
     // print new value as both feedback & a debug measure
-    PrintForestAudioParameterValue(targetForestParam, forestAudioController->GetParamValue(targetForestParam));
+    Utils::PrintParameter(forestAudioController, paramName);
 }
-

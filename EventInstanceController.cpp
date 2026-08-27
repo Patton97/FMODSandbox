@@ -5,6 +5,19 @@
 EventInstanceController::EventInstanceController(FMOD::Studio::EventInstance* eventInstance)
 {
     this->eventInstance = eventInstance;
+
+    FMOD::Studio::EventDescription* desc;
+    this->eventInstance->getDescription(&desc);
+
+    int paramCount;
+    desc->getParameterDescriptionCount(&paramCount);
+    for (int i = 0; i <= paramCount; ++i)
+    {
+        FMOD_STUDIO_PARAMETER_DESCRIPTION paramDesc;
+        FMOD_RESULT getParamResult = desc->getParameterDescriptionByIndex(i, &paramDesc);
+        if (getParamResult == FMOD_OK)
+            this->paramDescriptions.push_back(paramDesc);
+    }
 }
 
 EventInstanceController::~EventInstanceController()
@@ -12,6 +25,28 @@ EventInstanceController::~EventInstanceController()
     this->eventInstance->release();
     delete this->eventInstance;
     this->eventInstance == nullptr;
+}
+
+std::string EventInstanceController::GetName()
+{
+    FMOD::Studio::EventDescription* desc;
+    this->eventInstance->getDescription(&desc);
+
+    char path[512];
+    int* retrieved = nullptr;
+    desc->getPath(path, sizeof(path), retrieved);
+
+    return std::string(path);
+}
+
+std::string EventInstanceController::GetParamName(int index)
+{
+    return std::string(this->paramDescriptions[index].name);
+}
+
+int EventInstanceController::GetParamCount()
+{
+    return this->paramDescriptions.size();
 }
 
 float EventInstanceController::GetParamValue(std::string parameterName)

@@ -13,6 +13,8 @@ KeyPress InputManager::GetKeyPress()
         {
             case 72: return { KeyCode::ArrowUp, 0 };
             case 80: return { KeyCode::ArrowDown, 0 };
+            case 75: return { KeyCode::ArrowLeft, 0 };
+            case 77: return { KeyCode::ArrowRight, 0 };
             default: return { KeyCode::Unknown, 0 };
         }
     }

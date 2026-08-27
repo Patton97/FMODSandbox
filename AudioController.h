@@ -23,12 +23,18 @@ private:
 
     ControlTarget currentControlTarget = ControlTarget::Volume;
     int currentBusIndex = 0;
+    int currentParameterIndex = 0;
 
     EventInstanceController* forestAudioController;
-    std::map<char, std::string> forestParamsKeyedByKey;
-    std::string targetForestParam = "Cover";
 
     void OnKeyPress(KeyPress keyPress);
+
+    void ChangeControlTarget();
+    void ChangeControlTargetItemIndex(bool increment);
+    void ChangeBusIndex(bool increment);
+    void ChangeParameterIndex(bool increment);
+    
+    void ModifyVolume(FMODBusController* busController, float modifyAmount);
     void ModifyValue(bool positiveModify);
     void ModifyParameter(float modifyAmount);
 };
