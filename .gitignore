@@ -33,7 +33,7 @@
 
 # Other stuff
 .vs/
-*.vcxproj*
+*.vcxproj.*
 
 # FMOD API
 FMOD_API/
