@@ -1,7 +1,7 @@
 # Setup Instructions
 
 <details>
-  <summary>Expand to read more</summary>
+  <summary># Expand to read more</summary>
   
   **Prerequisites**
   * [FMOD Engine](https://www.fmod.com/download) (I used v2.02.12)
