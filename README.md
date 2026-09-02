@@ -1,6 +1,4 @@
-# FMODSandbox
-
-## Setup Instructions
+# Setup Instructions
 
 <details>
   <summary>Expand to read more</summary>
@@ -19,7 +17,7 @@
   * Run the app!
 </details>
 
-## Keyboard Controls
+# Keyboard Controls
 
 <details>
   <summary>Expand to read more</summary>
